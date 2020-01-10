@@ -1,0 +1,12 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="" GeneratedClassName="MySettings" UseMySettingsClassName="true">
+  <Profiles />
+  <Settings>
+    <Setting Name="ConStrSilog" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Provider=SQLOLEDB.1;Server=SQLC2;Persist Security Info=True;Password=SilmoMacro;User ID=ZCBN;</Value>
+    </Setting>
+    <Setting Name="ConStrTops" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Provider=MSDAORA.1;Password=TOPERP;User ID=TOPERP;Data Source=TOP</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

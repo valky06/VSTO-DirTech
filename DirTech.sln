@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29411.108
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "DirTech", "DirTech\DirTech.vbproj", "{81B6F7E0-6203-422E-AE89-2C112449CA91}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{81B6F7E0-6203-422E-AE89-2C112449CA91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81B6F7E0-6203-422E-AE89-2C112449CA91}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81B6F7E0-6203-422E-AE89-2C112449CA91}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81B6F7E0-6203-422E-AE89-2C112449CA91}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CBDE5CA9-9254-4938-AB73-43A121F09FCC}
+	EndGlobalSection
+EndGlobal
