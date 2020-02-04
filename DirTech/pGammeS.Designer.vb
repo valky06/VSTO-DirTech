@@ -29,10 +29,10 @@ Partial Class pGammeS
         Me.tGamme = New System.Windows.Forms.TextBox()
         Me.Gamme = New System.Windows.Forms.Label()
         Me.gListe = New System.Windows.Forms.DataGridView()
+        Me.Gammes = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.i_info = New System.Windows.Forms.ToolStripStatusLabel()
         Me.tInit = New System.Windows.Forms.ToolStripStatusLabel()
         Me.StatusStrip1 = New System.Windows.Forms.StatusStrip()
-        Me.Gammes = New System.Windows.Forms.DataGridViewTextBoxColumn()
         CType(Me.gListe, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.StatusStrip1.SuspendLayout()
         Me.SuspendLayout()
@@ -110,6 +110,12 @@ Partial Class pGammeS
         Me.gListe.Size = New System.Drawing.Size(217, 481)
         Me.gListe.TabIndex = 34
         '
+        'Gammes
+        '
+        Me.Gammes.HeaderText = "Gammes Silog"
+        Me.Gammes.Name = "Gammes"
+        Me.Gammes.ReadOnly = True
+        '
         'i_info
         '
         Me.i_info.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
@@ -139,12 +145,6 @@ Partial Class pGammeS
         Me.StatusStrip1.Size = New System.Drawing.Size(221, 27)
         Me.StatusStrip1.TabIndex = 33
         Me.StatusStrip1.Text = "StatusStrip1"
-        '
-        'Gammes
-        '
-        Me.Gammes.HeaderText = "Gammes Silog"
-        Me.Gammes.Name = "Gammes"
-        Me.Gammes.ReadOnly = True
         '
         'pGammeS
         '

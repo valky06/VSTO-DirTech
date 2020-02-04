@@ -79,6 +79,7 @@
         Me.Button1.Label = "Gammes Top Solid"
         Me.Button1.Name = "Button1"
         Me.Button1.ShowImage = True
+        Me.Button1.Visible = False
         '
         'rDirTech
         '

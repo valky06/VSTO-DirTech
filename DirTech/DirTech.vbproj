@@ -43,7 +43,7 @@
     <PublishUrl>\\nasc1\data\ikep\deploiement\VSTO\DirTech\</PublishUrl>
     <InstallUrl />
     <TargetCulture>fr</TargetCulture>
-    <ApplicationVersion>1.0.0.0</ApplicationVersion>
+    <ApplicationVersion>1.0.0.3</ApplicationVersion>
     <AutoIncrementApplicationRevision>false</AutoIncrementApplicationRevision>
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateInterval>0</UpdateInterval>

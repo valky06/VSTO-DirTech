@@ -98,9 +98,10 @@ Public Class pGammeS
             If NivMax < leNiveau Then NivMax = leNiveau
 
             sSql = " Select LDFC.CodeListeFabStd, LDFC.Phase, LDFC.TypeRubrique, LDFC.CodeRubrique, LDFC.SousTraitance, LDFC.QuantiteComposant, LDFC.TempsPoste, LDFC.TempsReglage, " _
-            & "ARTICLE.CodeSpecifLct, ARTICLE.CodeListeFab,ARTICLE.ArtAchOuFab " _
+            & "ARTICLE.CodeSpecifLct, ARTICLE.CodeListeFab,ARTICLE.ArtAchOuFab,  ARTICLE.Designation1 as ArtDes, ARTICLE.TypeProduit, POSTE.Designation1 as PosDes " _
             & " From LDFC " _
             & " LEFT OUTER Join ARTICLE On LDFC.CodeRubrique = ARTICLE.CodeArticle And TypeRubrique='A'" _
+            & " LEFT OUTER JOIN  POSTE ON LDFC.CodeRubrique = POSTE.CodePoste AND LDFC.TypeRubrique = 'O' " _
             & " where LDFC.CodeListeFabStd = '" & laGamme & "' ORDER BY LDFC.Phase"
             lers = SqlLit(sSql, conSqlSilog)
             While lers.Read
@@ -114,8 +115,10 @@ Public Class pGammeS
                     laLigne += 1
                     Call afficheNomenclature(lers("CodeSpecifLct"), leNiveau + 1, Nz(lers("QuantiteComposant"), 1) * laQte)
                 Else
-                    APP.Cells(laLigne, 21).value = lers("TempsPoste") * laQte
-                    APP.Cells(laLigne, 22).value = lers("TempsReglage")
+                    APP.Cells(laLigne, 21).value = IIf(Nz(lers("typeRubrique"), "") = "A", Nz(lers("ArtDes"), ""), Nz(lers("PosDes"), ""))
+                    APP.Cells(laLigne, 22).value = IIf(Nz(lers("TypeProduit"), 0) = 4, "SST", "")
+                    APP.Cells(laLigne, 23).value = lers("TempsPoste") * laQte
+                    APP.Cells(laLigne, 24).value = lers("TempsReglage")
                     laLigne += 1
                 End If
 
@@ -131,8 +134,10 @@ Public Class pGammeS
     Private Sub gListe_CellDoubleClick(sender As Object, e As DataGridViewCellEventArgs) Handles gListe.CellDoubleClick
 
         APP.Cells.Clear()
-        APP.Columns("A:S").NumberFormat = "@"
+        APP.Columns("A:U").NumberFormat = "@"
         APP.Columns("A:S").ColumnWidth = 4
+        APP.Columns("U").ColumnWidth = 40
+
         NivMax = 0
 
         'Mise en forme début
@@ -141,17 +146,20 @@ Public Class pGammeS
         APP.Cells(1, 1).Font.Color = RGB(192, 0, 0)
         APP.Cells(1, 1).Font.size = 18
 
+
         'Ligne d'entete
         laLigne = 3
         APP.Cells(laLigne, 1).value = "N"
         APP.Cells(laLigne, 2).value = "Ph"
         APP.Cells(laLigne, 3).value = "Composant/Opération"
         APP.Cells(laLigne, 20).value = "Qté"
-        APP.Cells(laLigne, 21).value = "Tps Prod/U"
-        APP.Cells(laLigne, 22).value = "Tps Rég."
-        APP.Range("A" & laLigne & ":V" & laLigne).Interior.Color = RGB(192, 0, 0)
-        APP.Range("A" & laLigne & ":V" & laLigne).Font.Color = RGB(255, 255, 255)
-        APP.Range("A" & laLigne & ":V" & laLigne).Font.Bold = True
+        APP.Cells(laLigne, 21).value = "Désignation"
+        APP.Cells(laLigne, 22).value = "Sous-Trait"
+        APP.Cells(laLigne, 23).value = "Tps Prod/U"
+        APP.Cells(laLigne, 24).value = "Tps Rég."
+        APP.Range("A" & laLigne & ":X" & laLigne).Interior.Color = RGB(192, 0, 0)
+        APP.Range("A" & laLigne & ":X" & laLigne).Font.Color = RGB(255, 255, 255)
+        APP.Range("A" & laLigne & ":X" & laLigne).Font.Bold = True
 
         'Affichage Détail
         laLigne += 1
@@ -163,5 +171,9 @@ Public Class pGammeS
         For i = (NivMax + 1) * 2 + 2 To 19
             APP.Columns(i).ColumnWidth = 0
         Next
+    End Sub
+
+    Private Sub tGamme_TextChanged(sender As Object, e As EventArgs) Handles tGamme.TextChanged
+
     End Sub
 End Class

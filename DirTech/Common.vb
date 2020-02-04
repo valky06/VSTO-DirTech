@@ -148,6 +148,7 @@ Public Module Common
 
     Sub ConnexionInit(ByVal strCon As String, ByRef consql As OleDb.OleDbConnection)
         Try
+            ConnexionFerme(consql)
             consql.ConnectionString = strCon
         Catch ex As Exception
             Throw New Exception("Erreur d'initialisation de connexion")
