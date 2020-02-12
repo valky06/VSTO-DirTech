@@ -83,6 +83,10 @@ Public Class pGammeS
 
     End Sub
 
+    Function Txtconcat(s As Object) As String
+        If Nz(s, "") <> "" Then Return Chr(10) & Nz(s, "") Else Return ""
+    End Function
+
     ''' <summary>
     ''' Affiche la nomenclature de la gamme au niveau N multiplié la quantité du composant
     ''' </summary>
@@ -99,6 +103,7 @@ Public Class pGammeS
 
             sSql = " Select LDFC.CodeListeFabStd, LDFC.Phase, LDFC.TypeRubrique, LDFC.CodeRubrique, LDFC.SousTraitance, LDFC.QuantiteComposant, LDFC.TempsPoste, LDFC.TempsReglage, " _
             & "ARTICLE.CodeSpecifLct, ARTICLE.CodeListeFab,ARTICLE.ArtAchOuFab,  ARTICLE.Designation1 as ArtDes, ARTICLE.TypeProduit, POSTE.Designation1 as PosDes " _
+            & " ,ModeOperatoire1,ModeOperatoire2,ModeOperatoire3,ModeOperatoire4,ModeOperatoire5 " _
             & " From LDFC " _
             & " LEFT OUTER Join ARTICLE On LDFC.CodeRubrique = ARTICLE.CodeArticle And TypeRubrique='A'" _
             & " LEFT OUTER JOIN  POSTE ON LDFC.CodeRubrique = POSTE.CodePoste AND LDFC.TypeRubrique = 'O' " _
@@ -109,6 +114,7 @@ Public Class pGammeS
                 APP.Cells(laLigne, leNiveau * 2 + 2).value = "'" & lers("Phase")
                 APP.Cells(laLigne, leNiveau * 2 + 3).value = lers("CodeRubrique")
                 APP.Cells(laLigne, 20).value = Val(Nz(lers("QuantiteComposant"), 1) * laQte)
+                APP.Cells(laLigne, 25).value = Nz(lers("ModeOperatoire1"), "") & Txtconcat(lers("ModeOperatoire2")) & Txtconcat(lers("ModeOperatoire3")) & Txtconcat(lers("ModeOperatoire4")) & Txtconcat(lers("ModeOperatoire5"))
                 If leNiveau > 0 Then APP.Range(APP.Cells(laLigne, leNiveau * 2 + 2), APP.Cells(laLigne, 22)).Interior.Color = RGB(230 - leNiveau * 10, 230 - leNiveau * 10, 230 - leNiveau * 10)
 
                 If Nz(lers("ArtAchOuFab"), "O") = "N" And Nz(lers("CodeSpecifLct"), "") <> "" Then
@@ -137,6 +143,8 @@ Public Class pGammeS
         APP.Columns("A:U").NumberFormat = "@"
         APP.Columns("A:S").ColumnWidth = 4
         APP.Columns("U").ColumnWidth = 40
+        APP.Columns("Y").ColumnWidth = 40
+
 
         NivMax = 0
 
@@ -145,7 +153,6 @@ Public Class pGammeS
         APP.Cells(1, 1).value = Me.gListe.Rows(e.RowIndex).Cells("Gammes").Value
         APP.Cells(1, 1).Font.Color = RGB(192, 0, 0)
         APP.Cells(1, 1).Font.size = 18
-
 
         'Ligne d'entete
         laLigne = 3
@@ -157,9 +164,10 @@ Public Class pGammeS
         APP.Cells(laLigne, 22).value = "Sous-Trait"
         APP.Cells(laLigne, 23).value = "Tps Prod/U"
         APP.Cells(laLigne, 24).value = "Tps Rég."
-        APP.Range("A" & laLigne & ":X" & laLigne).Interior.Color = RGB(192, 0, 0)
-        APP.Range("A" & laLigne & ":X" & laLigne).Font.Color = RGB(255, 255, 255)
-        APP.Range("A" & laLigne & ":X" & laLigne).Font.Bold = True
+        APP.Cells(laLigne, 25).value = "Mode Op."
+        APP.Range("A" & laLigne & ":Y" & laLigne).Interior.Color = RGB(192, 0, 0)
+        APP.Range("A" & laLigne & ":Y" & laLigne).Font.Color = RGB(255, 255, 255)
+        APP.Range("A" & laLigne & ":Y" & laLigne).Font.Bold = True
 
         'Affichage Détail
         laLigne += 1
@@ -171,6 +179,8 @@ Public Class pGammeS
         For i = (NivMax + 1) * 2 + 2 To 19
             APP.Columns(i).ColumnWidth = 0
         Next
+        APP.Columns("Y").WrapText = False
+
     End Sub
 
     Private Sub tGamme_TextChanged(sender As Object, e As EventArgs) Handles tGamme.TextChanged
