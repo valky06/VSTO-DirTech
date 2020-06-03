@@ -6,6 +6,8 @@ Public Class pGammeS
     Dim APP As Excel.Application = Globals.CompoXLCompta.Application
     Dim laLigne As Integer
     Dim NivMax As Integer
+    Dim MntProd As Decimal
+    Dim MntReg As Decimal
 
     Private Sub i_info_DoubleClick(sender As Object, e As EventArgs) Handles i_info.DoubleClick
         System.Diagnostics.Process.Start(Me.i_info.Tag)
@@ -22,9 +24,6 @@ Public Class pGammeS
 
     Private Sub pFactor_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         Me.i_info.Enabled = (Me.i_info.Tag <> "")
-        Try
-        Catch ex As Exception
-        End Try
     End Sub
 
 
@@ -38,7 +37,6 @@ Public Class pGammeS
 
         Dim sSql As String
         Dim lers As OleDb.OleDbDataReader
-
 
         Try
             Me.gListe.Rows.Clear()
@@ -97,13 +95,13 @@ Public Class pGammeS
         Dim sSql As String
         Dim lers As OleDb.OleDbDataReader
         Try
-            APP.Cells(3, leNiveau * 2 + 2).value = "Ph"
-            APP.Cells(3, leNiveau * 2 + 3).value = "Composant/Opération"
+            APP.Cells(7, leNiveau * 2 + 2).value = "Ph"
+            APP.Cells(7, leNiveau * 2 + 3).value = "Composant/Opération"
             If NivMax < leNiveau Then NivMax = leNiveau
 
             sSql = " Select LDFC.CodeListeFabStd, LDFC.Phase, LDFC.TypeRubrique, LDFC.CodeRubrique, LDFC.SousTraitance, LDFC.QuantiteComposant, LDFC.TempsPoste, LDFC.TempsReglage, " _
             & "ARTICLE.CodeSpecifLct, ARTICLE.CodeListeFab,ARTICLE.ArtAchOuFab,  ARTICLE.Designation1 as ArtDes, ARTICLE.TypeProduit, POSTE.Designation1 as PosDes " _
-            & " ,ModeOperatoire1,ModeOperatoire2,ModeOperatoire3,ModeOperatoire4,ModeOperatoire5 " _
+            & " ,ModeOperatoire1,ModeOperatoire2,ModeOperatoire3,ModeOperatoire4,ModeOperatoire5,GammeOperatoire, POSTE.CoutHoraireRevient,ARTICLE.CoutFabrication " _
             & " From LDFC " _
             & " LEFT OUTER Join ARTICLE On LDFC.CodeRubrique = ARTICLE.CodeArticle And TypeRubrique='A'" _
             & " LEFT OUTER JOIN  POSTE ON LDFC.CodeRubrique = POSTE.CodePoste AND LDFC.TypeRubrique = 'O' " _
@@ -114,7 +112,7 @@ Public Class pGammeS
                 APP.Cells(laLigne, leNiveau * 2 + 2).value = "'" & lers("Phase")
                 APP.Cells(laLigne, leNiveau * 2 + 3).value = lers("CodeRubrique")
                 APP.Cells(laLigne, 20).value = Val(Nz(lers("QuantiteComposant"), 1) * laQte)
-                APP.Cells(laLigne, 25).value = Nz(lers("ModeOperatoire1"), "") & Txtconcat(lers("ModeOperatoire2")) & Txtconcat(lers("ModeOperatoire3")) & Txtconcat(lers("ModeOperatoire4")) & Txtconcat(lers("ModeOperatoire5"))
+                APP.Cells(laLigne, 28).value = Nz(lers("ModeOperatoire1"), "") & Txtconcat(lers("ModeOperatoire2")) & Txtconcat(lers("ModeOperatoire3")) & Txtconcat(lers("ModeOperatoire4")) & Txtconcat(lers("ModeOperatoire5")) & Txtconcat(lers("GammeOperatoire"))
                 If leNiveau > 0 Then APP.Range(APP.Cells(laLigne, leNiveau * 2 + 2), APP.Cells(laLigne, 22)).Interior.Color = RGB(230 - leNiveau * 10, 230 - leNiveau * 10, 230 - leNiveau * 10)
 
                 If Nz(lers("ArtAchOuFab"), "O") = "N" And Nz(lers("CodeSpecifLct"), "") <> "" Then
@@ -125,6 +123,17 @@ Public Class pGammeS
                     APP.Cells(laLigne, 22).value = IIf(Nz(lers("TypeProduit"), 0) = 4, "SST", "")
                     APP.Cells(laLigne, 23).value = lers("TempsPoste") * laQte
                     APP.Cells(laLigne, 24).value = lers("TempsReglage")
+                    If Nz(lers("TypeRubrique"), "O") = "O" Then
+                        APP.Cells(laLigne, 25).value = Sql2num(lers("CoutHoraireRevient"))
+                        APP.Cells(laLigne, 26).value = Sql2num(lers("CoutHoraireRevient")) * Sql2num(Nz(lers("TempsPoste"), 1) * laQte)
+                        APP.Cells(laLigne, 27).value = Sql2num(lers("CoutHoraireRevient")) * Sql2num(Nz(lers("TempsReglage"), 1))
+                        MntProd += Sql2num(lers("CoutHoraireRevient")) * Sql2num(Nz(lers("TempsPoste"), 1) * laQte)
+                        MntReg += Sql2num(lers("CoutHoraireRevient")) * Sql2num(Nz(lers("TempsReglage"), 1))
+                    Else
+                        APP.Cells(laLigne, 25).value = Sql2num(lers("CoutFabrication"))
+                        APP.Cells(laLigne, 26).value = Sql2num(lers("CoutFabrication")) * Sql2num(Nz(lers("QuantiteComposant"), 1) * laQte)
+                        MntProd += Sql2num(lers("CoutFabrication")) * Sql2num(Nz(lers("QuantiteComposant"), 1) * laQte)
+                    End If
                     laLigne += 1
                 End If
 
@@ -143,8 +152,9 @@ Public Class pGammeS
         APP.Columns("A:U").NumberFormat = "@"
         APP.Columns("A:S").ColumnWidth = 4
         APP.Columns("U").ColumnWidth = 40
-        APP.Columns("Y").ColumnWidth = 40
-
+        APP.Columns("AB").ColumnWidth = 40
+        APP.Columns("Y:AA").NumberFormat = "#,##0.00"
+        APP.Columns("W:X").NumberFormat = "#,##0.000"
 
         NivMax = 0
 
@@ -154,8 +164,19 @@ Public Class pGammeS
         APP.Cells(1, 1).Font.Color = RGB(192, 0, 0)
         APP.Cells(1, 1).Font.size = 18
 
+        'Mise en forme Qté Eco
+        APP.Cells(1, 25).value = "Coût Total Prod/U"
+        APP.Cells(2, 25).value = "Coût Total Rég."
+        APP.Cells(3, 25).value = "Besoin Annuel"
+        APP.Cells(4, 25).value = "Tx Poss. Stock"
+        APP.Cells(5, 25).value = "Qté Eco"
+        APP.Cells(4, 27).value = 8 / 100
+        APP.Range("Y1:Z5").Interior.Color = RGB(192, 0, 0)
+        APP.Range("Y1:Z5").Font.Color = RGB(255, 255, 255)
+        APP.Range("Y1:Z5").Font.Bold = True
+
         'Ligne d'entete
-        laLigne = 3
+        laLigne = 7
         APP.Cells(laLigne, 1).value = "N"
         APP.Cells(laLigne, 2).value = "Ph"
         APP.Cells(laLigne, 3).value = "Composant/Opération"
@@ -164,22 +185,31 @@ Public Class pGammeS
         APP.Cells(laLigne, 22).value = "Sous-Trait"
         APP.Cells(laLigne, 23).value = "Tps Prod/U"
         APP.Cells(laLigne, 24).value = "Tps Rég."
-        APP.Cells(laLigne, 25).value = "Mode Op."
-        APP.Range("A" & laLigne & ":Y" & laLigne).Interior.Color = RGB(192, 0, 0)
-        APP.Range("A" & laLigne & ":Y" & laLigne).Font.Color = RGB(255, 255, 255)
-        APP.Range("A" & laLigne & ":Y" & laLigne).Font.Bold = True
+        APP.Cells(laLigne, 25).value = "C.Unit"
+        APP.Cells(laLigne, 26).value = "Mt Prod/U"
+        APP.Cells(laLigne, 27).value = "Mt Rég."
+        APP.Cells(laLigne, 28).value = "Mode Op."
+        APP.Range("A" & laLigne & ":AB" & laLigne).Interior.Color = RGB(192, 0, 0)
+        APP.Range("A" & laLigne & ":AB" & laLigne).Font.Color = RGB(255, 255, 255)
+        APP.Range("A" & laLigne & ":AB" & laLigne).Font.Bold = True
 
         'Affichage Détail
         laLigne += 1
         Call afficheNomenclature(Me.gListe.Rows(e.RowIndex).Cells("Gammes").Value, 0, 1)
 
         'Mise en forme finale
-
         APP.Columns((NivMax + 1) * 2 + 1).EntireColumn.AutoFit
         For i = (NivMax + 1) * 2 + 2 To 19
             APP.Columns(i).ColumnWidth = 0
         Next
-        APP.Columns("Y").WrapText = False
+        APP.Columns("AB").WrapText = False
+
+
+        'MIse en forme Qté Eco
+        APP.Cells(1, 27).formula = "=SUM(Z8:Z" & laLigne - 1 & ")"
+        APP.Cells(2, 27).formula = "=SUM(AA8:AA" & laLigne - 1 & ")"
+        APP.Cells(5, 27).formula = "=((2*AA3*AA2)/(AA1*AA4))^0.5"
+        APP.Range("Y8:AA" & laLigne - 1).Interior.Color = RGB(255, 230, 155)
 
     End Sub
 
