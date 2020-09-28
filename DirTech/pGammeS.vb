@@ -101,7 +101,7 @@ Public Class pGammeS
 
             sSql = " Select LDFC.CodeListeFabStd, LDFC.Phase, LDFC.TypeRubrique, LDFC.CodeRubrique, LDFC.SousTraitance, LDFC.QuantiteComposant, LDFC.TempsPoste, LDFC.TempsReglage, " _
             & "ARTICLE.CodeSpecifLct, ARTICLE.CodeListeFab,ARTICLE.ArtAchOuFab,  ARTICLE.Designation1 as ArtDes, ARTICLE.TypeProduit, POSTE.Designation1 as PosDes " _
-            & " ,ModeOperatoire1,ModeOperatoire2,ModeOperatoire3,ModeOperatoire4,ModeOperatoire5,GammeOperatoire, POSTE.CoutHoraireRevient,ARTICLE.CoutFabrication,CodeDeptProd " _
+            & " ,ModeOperatoire1,ModeOperatoire2,ModeOperatoire3,ModeOperatoire4,ModeOperatoire5,GammeOperatoire, POSTE.CoutHoraireRevient,ARTICLE.CoutFabrication,CodeDeptProd,article.QuantiteEconomique " _
             & " From LDFC " _
             & " LEFT OUTER Join ARTICLE On LDFC.CodeRubrique = ARTICLE.CodeArticle And TypeRubrique='A'" _
             & " LEFT OUTER JOIN  POSTE ON LDFC.CodeRubrique = POSTE.CodePoste AND LDFC.TypeRubrique = 'O' " _
@@ -113,9 +113,12 @@ Public Class pGammeS
                 APP.Cells(laLigne, leNiveau * 2 + 3).value = lers("CodeRubrique")
                 APP.Cells(laLigne, 20).value = Val(Nz(lers("QuantiteComposant"), 1) * laQte)
                 APP.Cells(laLigne, 28).value = Nz(lers("ModeOperatoire1"), "") & Txtconcat(lers("ModeOperatoire2")) & Txtconcat(lers("ModeOperatoire3")) & Txtconcat(lers("ModeOperatoire4")) & Txtconcat(lers("ModeOperatoire5")) & Txtconcat(lers("GammeOperatoire"))
+
+
                 If leNiveau > 0 Then APP.Range(APP.Cells(laLigne, leNiveau * 2 + 2), APP.Cells(laLigne, 22)).Interior.Color = RGB(230 - leNiveau * 10, 230 - leNiveau * 10, 230 - leNiveau * 10)
 
                 If Nz(lers("ArtAchOuFab"), "O") = "N" And Nz(lers("CodeSpecifLct"), "") <> "" Then
+                    APP.Cells(laLigne, 29).value = Sql2num(lers("QuantiteEconomique"))
                     laLigne += 1
                     Call afficheNomenclature(lers("CodeSpecifLct"), leNiveau + 1, Nz(lers("QuantiteComposant"), 1) * laQte)
                 Else
@@ -145,6 +148,9 @@ Public Class pGammeS
                         APP.Cells(laLigne, 26).value = Sql2num(lers("CoutFabrication")) * Sql2num(Nz(lers("QuantiteComposant"), 1) * laQte)
                         MntProd += Sql2num(lers("CoutFabrication")) * Sql2num(Nz(lers("QuantiteComposant"), 1) * laQte)
                     End If
+
+
+
                     laLigne += 1
                 End If
 
@@ -200,9 +206,10 @@ Public Class pGammeS
         APP.Cells(laLigne, 26).value = "Mt Prod/U"
         APP.Cells(laLigne, 27).value = "Mt Rég."
         APP.Cells(laLigne, 28).value = "Mode Op."
-        APP.Range("A" & laLigne & ":AB" & laLigne).Interior.Color = RGB(192, 0, 0)
-        APP.Range("A" & laLigne & ":AB" & laLigne).Font.Color = RGB(255, 255, 255)
-        APP.Range("A" & laLigne & ":AB" & laLigne).Font.Bold = True
+        APP.Cells(laLigne, 29).value = "Qté Eco Actu"
+        APP.Range("A" & laLigne & ":AC" & laLigne).Interior.Color = RGB(192, 0, 0)
+        APP.Range("A" & laLigne & ":AC" & laLigne).Font.Color = RGB(255, 255, 255)
+        APP.Range("A" & laLigne & ":AC" & laLigne).Font.Bold = True
 
         'Affichage Détail
         laLigne += 1
@@ -213,7 +220,7 @@ Public Class pGammeS
         For i = (NivMax + 1) * 2 + 2 To 19
             APP.Columns(i).ColumnWidth = 0
         Next
-        APP.Columns("AB").WrapText = False
+        APP.Columns("AC").WrapText = False
 
 
         'MIse en forme Qté Eco
