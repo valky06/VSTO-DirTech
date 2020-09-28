@@ -68,10 +68,15 @@ Public Class pGammeT
 
         Try
             Me.gListe.Rows.Clear()
-            sSql = "select reference from TOPPDM.routing WHERE reference like '%" & Me.tGamme.Text & "%' and rownum <= 1000"
+            sSql = "    select O.Id_Object,A.REFERENCE,R.REFERENCE AS Gamme,R.Version " _
+            & " from t_article A" _
+            & " inner join TOPPDM.OBJECT O on O.id_object=a.ID_OBJECT" _
+            & " inner join TOPPDM.ROUTING R on R.Id_routing =O.Id_ROUTIng" _
+            & " where A.reference like '%" & Me.tGamme.Text & "%' and rownum <= 100" _
+            & " order by a.reference"
             lers = SqlLit(sSql, conSqlTops)
             While lers.Read
-                Me.gListe.Rows.Add(lers("reference"))
+                Me.gListe.Rows.Add(lers("Id_Object"), lers("REFERENCE"), lers("Gamme") & " v" & Nz(lers("Version"), ""))
             End While
             lers.Close()
         Catch ex As Exception
@@ -81,85 +86,193 @@ Public Class pGammeT
         End Sub
 
 
+
+
     ''' <summary>
     ''' Affiche la nomenclature de la gamme au niveau N multiplié la quantité du composant
     ''' </summary>
-    ''' <param name="laGamme">La gamme ou sous-gamme à afficher</param>
+    ''' <param name="lItemId">L'Objet ou sous-gamme à afficher</param>
     ''' <param name="leNiveau">Le niveau d'affichage</param>
     ''' <param name="laQte">La quantité du composant dans la gamme N-1</param>
-    Sub afficheNomenclature(laGamme As String, leNiveau As Integer, laQte As Decimal)
-            Dim sSql As String
-            Dim lers As OleDb.OleDbDataReader
-            Try
-                APP.Cells(3, leNiveau * 2 + 2).value = "Ph"
-                APP.Cells(3, leNiveau * 2 + 3).value = "Composant/Opération"
-                If NivMax < leNiveau Then NivMax = leNiveau
+    Sub afficheNomenclature(lItemId As String, leNiveau As Integer, laQte As Decimal)
+        Dim sSql As String
+        Dim lers As OleDb.OleDbDataReader
+        Try
+            APP.Cells(7, leNiveau * 2 + 2).value = "Ph"
+            APP.Cells(7, leNiveau * 2 + 3).value = "Composant/Opération"
+            If NivMax < leNiveau Then NivMax = leNiveau
 
-                sSql = " Select LDFC.CodeListeFabStd, LDFC.Phase, LDFC.TypeRubrique, LDFC.CodeRubrique, LDFC.SousTraitance, LDFC.QuantiteComposant, LDFC.TempsPoste, LDFC.TempsReglage, " _
-            & "ARTICLE.CodeSpecifLct, ARTICLE.CodeListeFab,ARTICLE.ArtAchOuFab " _
-            & " From LDFC " _
-            & " LEFT OUTER Join ARTICLE On LDFC.CodeRubrique = ARTICLE.CodeArticle And TypeRubrique='A'" _
-            & " where LDFC.CodeListeFabStd = '" & laGamme & "' ORDER BY LDFC.Phase"
-                lers = SqlLit(sSql, conSqlSilog)
-                While lers.Read
-                    APP.Cells(laLigne, 1).value = leNiveau
-                    APP.Cells(laLigne, leNiveau * 2 + 2).value = "'" & lers("Phase")
-                    APP.Cells(laLigne, leNiveau * 2 + 3).value = lers("CodeRubrique")
-                    APP.Cells(laLigne, 20).value = Val(Nz(lers("QuantiteComposant"), 1) * laQte)
-                    If leNiveau > 0 Then APP.Range(APP.Cells(laLigne, leNiveau * 2 + 2), APP.Cells(laLigne, 22)).Interior.Color = RGB(230 - leNiveau * 10, 230 - leNiveau * 10, 230 - leNiveau * 10)
+            'Affichage Nomenclature
+            sSql = "Select TP.id_object ,TP.Quantity, TF.ID_OBJECT,TF.Reference,TF.ID_ITEM,count(TF2.id_item) as NBFils,TF.ID_ROUTING" _
+            & " from toppdm.tree_bom TP" _
+            & " Left join toppdm.tree_bom TF     on TP.Id_Item=TF.Id_Parent_Item" _
+            & " Left join toppdm.tree_bom TF2  on TF.Id_Item=TF2.Id_Parent_Item  " _
+            & " where TP.ID_ITEM ='" & lItemId & "'" _
+            & " group by TP.id_object ,TP.Quantity, TF.ID_OBJECT,TF.Reference,TF.ID_ITEM,TF.ID_ROUTING"
+            lers = SqlLit(sSql, conSqlTops)
+            While lers.Read
+                APP.Cells(laLigne, 1).value = leNiveau
+                APP.Cells(laLigne, leNiveau * 2 + 2).value = "Nm"
+                APP.Cells(laLigne, leNiveau * 2 + 3).value = lers("reference")
+                APP.Cells(laLigne, 20).value = Sql2num(lers("Quantity"))
+                If leNiveau > 0 Then APP.Range(APP.Cells(laLigne, leNiveau * 2 + 2), APP.Cells(laLigne, 22)).Interior.Color = RGB(230 - leNiveau * 10, 230 - leNiveau * 10, 230 - leNiveau * 10)
 
-                    If Nz(lers("ArtAchOuFab"), "O") = "N" And Nz(lers("CodeSpecifLct"), "") <> "" Then
-                        laLigne += 1
-                        Call afficheNomenclature(lers("CodeSpecifLct"), leNiveau + 1, Nz(lers("QuantiteComposant"), 1) * laQte)
-                    Else
-                        APP.Cells(laLigne, 21).value = lers("TempsPoste") * laQte
-                        APP.Cells(laLigne, 22).value = lers("TempsReglage")
-                        laLigne += 1
-                    End If
+                laLigne += 1
+                If Sql2num(lers("NBFils")) > 0 Then Call afficheNomenclature(lers("ID_ITEM"), leNiveau + 1, Sql2num(lers("Quantity") * laQte))
+                AfficheGamme(lers("ID_ROUTING"), leNiveau + 1, lers("Quantity"))
+            End While
 
-                End While
-                lers.Close()
-            Catch ex As Exception
-                MsgBox(ex.Message)
-            End Try
+            lers.Close()
+        Catch ex As Exception
+            MsgBox(ex.Message)
+        End Try
 
 
-        End Sub
+    End Sub
 
-        Private Sub gListe_CellDoubleClick(sender As Object, e As DataGridViewCellEventArgs) Handles gListe.CellDoubleClick
+    Sub AfficheGamme(laGammeId As String, leNiveau As Integer, laQte As Decimal)
+        Dim sSql As String
+        Dim lers As OleDb.OleDbDataReader
+        Try
+            APP.Cells(7, leNiveau * 2 + 2).value = "Ph"
+            APP.Cells(7, leNiveau * 2 + 3).value = "Composant/Opération"
+            If NivMax < leNiveau Then NivMax = leNiveau
 
-            APP.Cells.Clear()
-            APP.Columns("A:S").NumberFormat = "@"
-            APP.Columns("A:S").ColumnWidth = 4
-            NivMax = 0
+            'affiche Matière
+            sSql = "Select RM.Quantity, RM.ID_Quantity_unit,A.reference,A.B_PROD ,O.type,O.ID_ROuting,A.designation,A.MNT_ACHAT,g.libelle" _
+            & " From TOPPDM.Routing R " _
+            & " left Join TOPPDM.ROUTING_MATERIAL RM On RM.ID_ROUTING= R.ID_ROUTING " _
+            & " Left Join T_ARTICLE A On A.ID_ARTICLE = RM.ID_ORIGIN " _
+            & " left join toppdm.object O on A.ID_Object=O.id_object " _
+            & "  left join t_groupe_article G on g.id_groupe_article=a.id_groupe_article" _
+            & " where RM.Quantity>0 and R.ID_ROUTING='" & laGammeId & "'"
+            lers = SqlLit(sSql, conSqlTops)
+            While lers.Read
+                APP.Cells(laLigne, 1).value = leNiveau
+                APP.Cells(laLigne, leNiveau * 2 + 2).value = lers("libelle")
+                APP.Cells(laLigne, leNiveau * 2 + 3).value = lers("reference")
+                APP.Cells(laLigne, 20).value = Sql2num(lers("Quantity")) * laQte
+                APP.Cells(laLigne, 21).value = lers("designation")
+                APP.Cells(laLigne, 23).value = Sql2num(lers("MNT_ACHAT"))
+                APP.Cells(laLigne, 27).value = Sql2num(lers("MNT_ACHAT")) * Sql2num(lers("Quantity")) * laQte
+                If leNiveau > 0 Then APP.Range(APP.Cells(laLigne, leNiveau * 2 + 2), APP.Cells(laLigne, 22)).Interior.Color = RGB(230 - leNiveau * 10, 230 - leNiveau * 10, 230 - leNiveau * 10)
+                laLigne += 1
 
-            'Mise en forme début
-            APP.Cells(1, 1).select
-            APP.Cells(1, 1).value = Me.gListe.Rows(e.RowIndex).Cells("Gammes").Value
-            APP.Cells(1, 1).Font.Color = RGB(192, 0, 0)
-            APP.Cells(1, 1).Font.size = 18
+                If Nz(lers("B_PROD"), 1) <> 0 And Nz(lers("ID_ROUTING"), 0) <> 0 Then
+                    AfficheGamme(lers("ID_ROuting"), leNiveau + 1, Sql2num(lers("Quantity")) * laQte)
+                End If
+            End While
+            lers.Close()
 
-            'Ligne d'entete
-            laLigne = 3
-            APP.Cells(laLigne, 1).value = "N"
-            APP.Cells(laLigne, 2).value = "Ph"
-            APP.Cells(laLigne, 3).value = "Composant/Opération"
-            APP.Cells(laLigne, 20).value = "Qté"
-            APP.Cells(laLigne, 21).value = "Tps Prod/U"
-            APP.Cells(laLigne, 22).value = "Tps Rég."
-            APP.Range("A" & laLigne & ":V" & laLigne).Interior.Color = RGB(192, 0, 0)
-            APP.Range("A" & laLigne & ":V" & laLigne).Font.Color = RGB(255, 255, 255)
-            APP.Range("A" & laLigne & ":V" & laLigne).Font.Bold = True
+            'Affiche opération
+            sSql = " select ROUTING.ID_ROUTING,ROUTING_OP.SEQ , ROUTING_INSTRUCTION.SETUP_TIME_HC, ROUTING_INSTRUCTION.WORK_TIME_HC,ROUTING_INSTRUCTION.CTRL_TIME_HC" _
+            & " ,ROUTING_RESOURCE.id_resource, RATE_PREPARE_COST, RATE_CYCLE_COST,RATE_CONTROL_COST, RESOURCES.name, routing.reference,ROUTING_OP.ID_TYPE" _
+            & " ,s.reference as RefSST,s.designation as DesSST,RESOURCES.designation as DesOP" _
+            & " from TOPPDM.Routing " _
+            & " left join TOPPDM.ROUTING_OP on ROUTING_OP.ID_ROUTING= ROUTING.ID_ROUTING" _
+            & " LEFT JOIN TOPPDM.ROUTING_INSTRUCTION on ROUTING_INSTRUCTION.ID_ROUTING_INSTRUCTION = ROUTING_OP.ID_ROUTING_INSTRUCTION" _
+            & " LEFT JOIN TOPPDM.ROUTING_RESOURCE on ROUTING_RESOURCE.ID_ROUTING_INSTRUCTION = ROUTING_INSTRUCTION.ID_ROUTING_INSTRUCTION" _
+            & " LEFT JOIN TOPMES.RESOURCES on RESOURCES.id_resource =ROUTING_RESOURCE.id_resource" _
+            & " LEFT JOIN T_SPECIALITE S on s.id_specialite = toppdm.routing_op.id_specialite_st" _
+            & " where ROUTING.ID_ROUTING='" & laGammeId & "' order by seq"
+            lers = SqlLit(sSql, conSqlTops)
+            While lers.Read
+                APP.Cells(laLigne, 1).value = leNiveau
+                APP.Cells(laLigne, leNiveau * 2 + 2).value = "'" & lers("SEQ")
+                If Nz(lers("ID_TYPE"), 0) = 1 Then
+                    APP.Cells(laLigne, leNiveau * 2 + 3).value = lers("RefSST")
+                    APP.Cells(laLigne, 21).value = lers("DesSST")
+                    APP.Cells(laLigne, 22).value = "SST"
+                Else
+                    APP.Cells(laLigne, leNiveau * 2 + 3).value = lers("name")
+                    APP.Cells(laLigne, 21).value = lers("DesOP")
+                    APP.Cells(laLigne, 24).value = Sql2num(lers("WORK_TIME_HC")) * laQte
+                    APP.Cells(laLigne, 25).value = Sql2num(lers("SETUP_TIME_HC"))
+                    APP.Cells(laLigne, 26).value = Sql2num(lers("CTRL_TIME_HC"))
+                    APP.Cells(laLigne, 28).value = Sql2num(lers("WORK_TIME_HC")) * laQte * Sql2num(lers("RATE_CYCLE_COST"))
+                    APP.Cells(laLigne, 29).value = Sql2num(lers("SETUP_TIME_HC")) * Sql2num(lers("RATE_PREPARE_COST"))
+                    APP.Cells(laLigne, 30).value = Sql2num(lers("CTRL_TIME_HC")) * Sql2num(lers("RATE_CONTROL_COST"))
 
-            'Affichage Détail
-            laLigne += 1
-            Call afficheNomenclature(Me.gListe.Rows(e.RowIndex).Cells("Gammes").Value, 0, 1)
+                End If
+                If leNiveau > 0 Then APP.Range(APP.Cells(laLigne, leNiveau * 2 + 2), APP.Cells(laLigne, 22)).Interior.Color = RGB(230 - leNiveau * 10, 230 - leNiveau * 10, 230 - leNiveau * 10)
+                laLigne += 1
+            End While
+            lers.Close()
+        Catch ex As Exception
+            MsgBox(ex.Message)
+        End Try
 
-            'Mise en forme finale
 
-            APP.Columns((NivMax + 1) * 2 + 1).EntireColumn.AutoFit
-            For i = (NivMax + 1) * 2 + 2 To 19
-                APP.Columns(i).ColumnWidth = 0
-            Next
-        End Sub
-    End Class
+    End Sub
+
+    Sub AfficheObjet(lObjetID As String)
+        Dim sSql As String
+        Dim lers As OleDb.OleDbDataReader
+        Try
+            sSql = "select o.type,t.id_item,O.id_routing " _
+            & " from toppdm.object O " _
+            & " Left join TOPPDM.TREE_BOM T on T.ID_OBJECT=O.ID_OBJECT And O.TYpe=48" _
+            & " where o.id_object = '" & lObjetID & "'"
+
+            lers = SqlLit(sSql, conSqlTops)
+            While lers.Read
+                If Sql2num(lers("type")) = 48 Then afficheNomenclature(lers("id_item"), 0, 1)
+                AfficheGamme(lers("ID_ROUTING"), 0, 1)
+            End While
+
+            lers.Close()
+        Catch ex As Exception
+            MsgBox(ex.Message)
+        End Try
+    End Sub
+
+    Private Sub gListe_CellDoubleClick(sender As Object, e As DataGridViewCellEventArgs) Handles gListe.CellDoubleClick
+
+        APP.Cells.Clear()
+        APP.Columns("A:S").NumberFormat = "@"
+        APP.Columns("A:S").ColumnWidth = 4
+        NivMax = 0
+
+        'Mise en forme début
+        APP.Cells(1, 1).select
+        APP.Cells(1, 1).value = Me.gListe.Rows(e.RowIndex).Cells("Article").Value
+        APP.Cells(1, 1).Font.Color = RGB(192, 0, 0)
+        APP.Cells(1, 1).Font.size = 18
+
+        'Ligne d'entete
+        laLigne = 7
+        APP.Cells(laLigne, 1).value = "N"
+        APP.Cells(laLigne, 2).value = "Ph"
+        APP.Cells(laLigne, 3).value = "Composant/Opération"
+        APP.Cells(laLigne, 20).value = "Qté"
+        APP.Cells(laLigne, 21).value = "Désignation"
+        APP.Cells(laLigne, 22).value = "Sous-Trait"
+        APP.Cells(laLigne, 23).value = "Cout Mat/U"
+        APP.Cells(laLigne, 24).value = "Tps Prod/U"
+        APP.Cells(laLigne, 25).value = "Tps Rég."
+        APP.Cells(laLigne, 26).value = "Tps Ctrl"
+        APP.Cells(laLigne, 27).value = "Mt Mat"
+        APP.Cells(laLigne, 28).value = "Mt Prod/U"
+        APP.Cells(laLigne, 29).value = "Mt Rég."
+        APP.Cells(laLigne, 30).value = "Mt Ctrl"
+        APP.Range("A" & laLigne & ":AD" & laLigne).Interior.Color = RGB(192, 0, 0)
+        APP.Range("A" & laLigne & ":AD" & laLigne).Font.Color = RGB(255, 255, 255)
+        APP.Range("A" & laLigne & ":AD" & laLigne).Font.Bold = True
+
+        'Affichage Détail
+        laLigne += 1
+        '        Call afficheNomenclature(Me.gListe.Rows(e.RowIndex).Cells("ObjectId").Value, 0, 1)
+        Call AfficheObjet(Me.gListe.Rows(e.RowIndex).Cells("ObjectId").Value)
+
+        'Mise en forme finale
+
+        APP.Columns((NivMax + 1) * 2 + 1).EntireColumn.AutoFit
+        For i = (NivMax + 1) * 2 + 2 To 19
+            APP.Columns(i).ColumnWidth = 0
+        Next
+    End Sub
+
+    Private Sub gListe_CellContentClick(sender As Object, e As DataGridViewCellEventArgs) Handles gListe.CellContentClick
+
+    End Sub
+End Class

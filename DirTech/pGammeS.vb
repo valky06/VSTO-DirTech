@@ -101,7 +101,7 @@ Public Class pGammeS
 
             sSql = " Select LDFC.CodeListeFabStd, LDFC.Phase, LDFC.TypeRubrique, LDFC.CodeRubrique, LDFC.SousTraitance, LDFC.QuantiteComposant, LDFC.TempsPoste, LDFC.TempsReglage, " _
             & "ARTICLE.CodeSpecifLct, ARTICLE.CodeListeFab,ARTICLE.ArtAchOuFab,  ARTICLE.Designation1 as ArtDes, ARTICLE.TypeProduit, POSTE.Designation1 as PosDes " _
-            & " ,ModeOperatoire1,ModeOperatoire2,ModeOperatoire3,ModeOperatoire4,ModeOperatoire5,GammeOperatoire, POSTE.CoutHoraireRevient,ARTICLE.CoutFabrication " _
+            & " ,ModeOperatoire1,ModeOperatoire2,ModeOperatoire3,ModeOperatoire4,ModeOperatoire5,GammeOperatoire, POSTE.CoutHoraireRevient,ARTICLE.CoutFabrication,CodeDeptProd " _
             & " From LDFC " _
             & " LEFT OUTER Join ARTICLE On LDFC.CodeRubrique = ARTICLE.CodeArticle And TypeRubrique='A'" _
             & " LEFT OUTER JOIN  POSTE ON LDFC.CodeRubrique = POSTE.CodePoste AND LDFC.TypeRubrique = 'O' " _
@@ -119,16 +119,27 @@ Public Class pGammeS
                     laLigne += 1
                     Call afficheNomenclature(lers("CodeSpecifLct"), leNiveau + 1, Nz(lers("QuantiteComposant"), 1) * laQte)
                 Else
-                    APP.Cells(laLigne, 21).value = IIf(Nz(lers("typeRubrique"), "") = "A", Nz(lers("ArtDes"), ""), Nz(lers("PosDes"), ""))
-                    APP.Cells(laLigne, 22).value = IIf(Nz(lers("TypeProduit"), 0) = 4, "SST", "")
+                    ' APP.Cells(laLigne, 21).value = IIf(Nz(lers("typeRubrique"), "") = "A", Nz(lers("ArtDes"), ""), Nz(lers("PosDes"), ""))
+
+                    If Nz(lers("typeRubrique"), "") = "A" Then
+                        APP.Cells(laLigne, 21).value = Nz(lers("ArtDes"), "")
+                        APP.Cells(laLigne, 22).value = IIf(Nz(lers("TypeProduit"), 0) = 4, "SST", "")
+                    Else
+                        APP.Cells(laLigne, 21).value = Nz(lers("PosDes"), "")
+                        APP.Cells(laLigne, 22).value = IIf(Nz(lers("CodeDeptProd"), 0) = "SST", "SST", "")
+                    End If
+
+
+                    'CodeDeptProd
+
                     APP.Cells(laLigne, 23).value = lers("TempsPoste") * laQte
                     APP.Cells(laLigne, 24).value = lers("TempsReglage")
                     If Nz(lers("TypeRubrique"), "O") = "O" Then
                         APP.Cells(laLigne, 25).value = Sql2num(lers("CoutHoraireRevient"))
                         APP.Cells(laLigne, 26).value = Sql2num(lers("CoutHoraireRevient")) * Sql2num(Nz(lers("TempsPoste"), 1) * laQte)
-                        APP.Cells(laLigne, 27).value = Sql2num(lers("CoutHoraireRevient")) * Sql2num(Nz(lers("TempsReglage"), 1))
+                        APP.Cells(laLigne, 27).value = Sql2num(lers("CoutHoraireRevient")) * Sql2num(Nz(lers("TempsReglage"), 1) * IIf(laQte > 0, 1, 0))
                         MntProd += Sql2num(lers("CoutHoraireRevient")) * Sql2num(Nz(lers("TempsPoste"), 1) * laQte)
-                        MntReg += Sql2num(lers("CoutHoraireRevient")) * Sql2num(Nz(lers("TempsReglage"), 1))
+                        MntReg += Sql2num(lers("CoutHoraireRevient")) * Sql2num(Nz(lers("TempsReglage"), 1) * IIf(laQte > 0, 1, 0))
                     Else
                         APP.Cells(laLigne, 25).value = Sql2num(lers("CoutFabrication"))
                         APP.Cells(laLigne, 26).value = Sql2num(lers("CoutFabrication")) * Sql2num(Nz(lers("QuantiteComposant"), 1) * laQte)

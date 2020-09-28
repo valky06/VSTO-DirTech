@@ -6,7 +6,10 @@
       <Value Profile="(Default)">Provider=SQLOLEDB.1;Server=SQLC2;Persist Security Info=True;Password=SilmoMacro;User ID=ZCBN;</Value>
     </Setting>
     <Setting Name="ConStrTops" Type="System.String" Scope="User">
-      <Value Profile="(Default)">Provider=MSDAORA.1;Password=TOPERP;User ID=TOPERP;Data Source=TOP</Value>
+      <Value Profile="(Default)">Data Source=TOP;User ID=TOPERP;Provider=OraOLEDB.Oracle.1;Persist Security Info=True;</Value>
+    </Setting>
+    <Setting Name="Paramètre" Type="System.String" Scope="User">
+      <Value Profile="(Default)">DRIVER={Oracle in OraClient11g_home1};DBQ=MyTNSnamesALias;UID=xxxx;PWD=xxxx</Value>
     </Setting>
   </Settings>
 </SettingsFile>

@@ -27,10 +27,12 @@ Partial Class pGammeT
         Me.tGamme = New System.Windows.Forms.TextBox()
         Me.Gamme = New System.Windows.Forms.Label()
         Me.gListe = New System.Windows.Forms.DataGridView()
+        Me.ObjectId = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.Article = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.Gammes = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.i_info = New System.Windows.Forms.ToolStripStatusLabel()
         Me.tInit = New System.Windows.Forms.ToolStripStatusLabel()
         Me.StatusStrip1 = New System.Windows.Forms.StatusStrip()
-        Me.Gammes = New System.Windows.Forms.DataGridViewTextBoxColumn()
         CType(Me.gListe, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.StatusStrip1.SuspendLayout()
         Me.SuspendLayout()
@@ -61,9 +63,9 @@ Partial Class pGammeT
         Me.Gamme.AutoSize = True
         Me.Gamme.Location = New System.Drawing.Point(7, 12)
         Me.Gamme.Name = "Gamme"
-        Me.Gamme.Size = New System.Drawing.Size(43, 13)
+        Me.Gamme.Size = New System.Drawing.Size(36, 13)
         Me.Gamme.TabIndex = 42
-        Me.Gamme.Text = "Gamme"
+        Me.Gamme.Text = "Article"
         '
         'gListe
         '
@@ -76,7 +78,7 @@ Partial Class pGammeT
         Me.gListe.BackgroundColor = System.Drawing.SystemColors.ButtonFace
         Me.gListe.BorderStyle = System.Windows.Forms.BorderStyle.None
         Me.gListe.ColumnHeadersHeight = 30
-        Me.gListe.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.Gammes})
+        Me.gListe.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.ObjectId, Me.Article, Me.Gammes})
         Me.gListe.Location = New System.Drawing.Point(6, 35)
         Me.gListe.MultiSelect = False
         Me.gListe.Name = "gListe"
@@ -86,6 +88,26 @@ Partial Class pGammeT
         Me.gListe.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect
         Me.gListe.Size = New System.Drawing.Size(212, 526)
         Me.gListe.TabIndex = 41
+        '
+        'ObjectId
+        '
+        Me.ObjectId.FillWeight = 10.0!
+        Me.ObjectId.HeaderText = "ObjectId"
+        Me.ObjectId.Name = "ObjectId"
+        Me.ObjectId.ReadOnly = True
+        Me.ObjectId.Visible = False
+        '
+        'Article
+        '
+        Me.Article.HeaderText = "Article"
+        Me.Article.Name = "Article"
+        Me.Article.ReadOnly = True
+        '
+        'Gammes
+        '
+        Me.Gammes.HeaderText = "Gammes"
+        Me.Gammes.Name = "Gammes"
+        Me.Gammes.ReadOnly = True
         '
         'i_info
         '
@@ -117,12 +139,6 @@ Partial Class pGammeT
         Me.StatusStrip1.TabIndex = 40
         Me.StatusStrip1.Text = "StatusStrip1"
         '
-        'Gammes
-        '
-        Me.Gammes.HeaderText = "Gammes Top Solid"
-        Me.Gammes.Name = "Gammes"
-        Me.Gammes.ReadOnly = True
-        '
         'pGammeT
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
@@ -146,8 +162,10 @@ Partial Class pGammeT
     Friend WithEvents tGamme As Windows.Forms.TextBox
     Friend WithEvents Gamme As Windows.Forms.Label
     Friend WithEvents gListe As Windows.Forms.DataGridView
-    Friend WithEvents Gammes As Windows.Forms.DataGridViewTextBoxColumn
     Friend WithEvents i_info As Windows.Forms.ToolStripStatusLabel
     Friend WithEvents tInit As Windows.Forms.ToolStripStatusLabel
     Friend WithEvents StatusStrip1 As Windows.Forms.StatusStrip
+    Friend WithEvents ObjectId As Windows.Forms.DataGridViewTextBoxColumn
+    Friend WithEvents Article As Windows.Forms.DataGridViewTextBoxColumn
+    Friend WithEvents Gammes As Windows.Forms.DataGridViewTextBoxColumn
 End Class

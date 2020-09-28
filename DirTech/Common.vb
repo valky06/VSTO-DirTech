@@ -7,7 +7,7 @@
 Public Module Common
     Public conSqlTops As New OleDb.OleDbConnection
     Public conSqlSilog As New OleDb.OleDbConnection
-    Public Modedebug As Boolean = False
+    Public Modedebug As Boolean = True
     Public Const RaisonSociale = "KEP TECHNOLOGIES"
     '    Public appXL As New Microsoft.Office.Interop.Excel.Application
     '    Dim sepDec As String = System.Globalization.CultureInfo.InstalledUICulture.NumberFormat.NumberDecimalSeparator
@@ -144,8 +144,6 @@ Public Module Common
 #End Region
 
 #Region "SQL"
-
-
     Sub ConnexionInit(ByVal strCon As String, ByRef consql As OleDb.OleDbConnection)
         Try
             ConnexionFerme(consql)

@@ -68,13 +68,26 @@ Partial Friend NotInheritable Class MySettings
     
     <Global.System.Configuration.UserScopedSettingAttribute(),  _
      Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-     Global.System.Configuration.DefaultSettingValueAttribute("Provider=MSDAORA.1;Password=TOPERP;User ID=TOPERP;Data Source=TOP")>  _
+     Global.System.Configuration.DefaultSettingValueAttribute("Data Source=TOP;User ID=TOPERP;Provider=OraOLEDB.Oracle.1;Persist Security Info=T"& _ 
+        "rue;")>  _
     Public Property ConStrTops() As String
         Get
             Return CType(Me("ConStrTops"),String)
         End Get
         Set
             Me("ConStrTops") = value
+        End Set
+    End Property
+    
+    <Global.System.Configuration.UserScopedSettingAttribute(),  _
+     Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+     Global.System.Configuration.DefaultSettingValueAttribute("DRIVER={Oracle in OraClient11g_home1};DBQ=MyTNSnamesALias;UID=xxxx;PWD=xxxx")>  _
+    Public Property Paramètre() As String
+        Get
+            Return CType(Me("Paramètre"),String)
+        End Get
+        Set
+            Me("Paramètre") = value
         End Set
     End Property
 End Class
